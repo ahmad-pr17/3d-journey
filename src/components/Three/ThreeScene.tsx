@@ -13,7 +13,7 @@ function LightingRig() {
   const scroll = useScroll()
   const ambientRef = useRef<THREE.AmbientLight>(null)
   const dirRef = useRef<THREE.DirectionalLight>(null)
-  
+
   // Colors for day/night cycle
   const nightColor = new THREE.Color('#020210')
   const dawnColor = new THREE.Color('#FF8C00')
@@ -65,7 +65,7 @@ function TreeGrowthWrapper({ story }: { story: any[] }) {
       const localOffset = offset / 0.3
       const targetZ = THREE.MathUtils.lerp(15, 6, localOffset)
       const targetY = THREE.MathUtils.lerp(1, 2, localOffset)
-      
+
       state.camera.position.z = THREE.MathUtils.lerp(state.camera.position.z, targetZ, 0.1)
       state.camera.position.y = THREE.MathUtils.lerp(state.camera.position.y, targetY, 0.1)
       state.camera.lookAt(0, 2, 0)
@@ -74,7 +74,7 @@ function TreeGrowthWrapper({ story }: { story: any[] }) {
       const localOffset = (offset - 0.3) / 0.4
       const targetY = THREE.MathUtils.lerp(2, 12, localOffset)
       const targetLookY = THREE.MathUtils.lerp(2, 12, localOffset)
-      
+
       state.camera.position.z = THREE.MathUtils.lerp(state.camera.position.z, 6, 0.1)
       state.camera.position.y = THREE.MathUtils.lerp(state.camera.position.y, targetY, 0.1)
       state.camera.lookAt(0, targetLookY, 0)
@@ -83,7 +83,7 @@ function TreeGrowthWrapper({ story }: { story: any[] }) {
       const localOffset = (offset - 0.7) / 0.3
       const targetY = THREE.MathUtils.lerp(12, 18, localOffset)
       const targetLookY = THREE.MathUtils.lerp(12, 28, localOffset) // look up!
-      
+
       state.camera.position.z = THREE.MathUtils.lerp(state.camera.position.z, 6, 0.1)
       state.camera.position.y = THREE.MathUtils.lerp(state.camera.position.y, targetY, 0.1)
       state.camera.lookAt(0, targetLookY, 0)
@@ -92,7 +92,15 @@ function TreeGrowthWrapper({ story }: { story: any[] }) {
 
   return (
     <group position={[0, 0, 0]}>
-      <ModelTree growth={scroll.offset} />
+      {/* Central main tree */}
+      <ModelTree growth={scroll.offset} position={[0, -2.0, 0]} scale={0.04} />
+      {/* Forest surrounding */}
+      <ModelTree growth={scroll.offset} position={[-4, -2.0, 2]} scale={0.035} rotation={[0, Math.PI / 4, 0]} />
+      <ModelTree growth={scroll.offset} position={[4, -2.0, -3]} scale={0.045} rotation={[0, -Math.PI / 6, 0]} />
+      <ModelTree growth={scroll.offset} position={[-3, -2.0, -6]} scale={0.03} rotation={[0, Math.PI / 3, 0]} />
+      <ModelTree growth={scroll.offset} position={[5, -2.0, 4]} scale={0.05} rotation={[0, Math.PI, 0]} />
+      <ModelTree growth={scroll.offset} position={[-6, -2.0, -1]} scale={0.038} rotation={[0, -Math.PI / 2, 0]} />
+      <ModelTree growth={scroll.offset} position={[2, -2.0, -8]} scale={0.042} rotation={[0, Math.PI / 8, 0]} />
 
       {story.map((item, index) => (
         <StoryCard
@@ -153,7 +161,7 @@ export default function ThreeScene() {
 
   return (
     <div className="canvas-container">
-      <Canvas shadows camera={{ position: [0, 1, 15], fov: 50 }}>
+      <Canvas shadows gl={{ localClippingEnabled: true }} camera={{ position: [0, 1, 15], fov: 50 }}>
         <Suspense fallback={null}>
           <ScrollControls pages={story.length + 2} damping={0.25} style={{ overflowX: 'hidden' }}>
             <LightingRig />
@@ -164,11 +172,11 @@ export default function ThreeScene() {
           </ScrollControls>
 
           <EffectComposer>
-            <DepthOfField 
-              focusDistance={0.01} 
-              focalLength={0.02} 
-              bokehScale={3} 
-              height={480} 
+            <DepthOfField
+              focusDistance={0.01}
+              focalLength={0.02}
+              bokehScale={3}
+              height={480}
             />
           </EffectComposer>
         </Suspense>

@@ -7,11 +7,15 @@ import * as THREE from 'three'
 
 interface ModelTreeProps {
   growth: number
+  position?: [number, number, number]
+  scale?: number
+  rotation?: [number, number, number]
 }
 
-export default function ModelTree({ growth }: ModelTreeProps) {
+export default function ModelTree({ growth, position = [0, -2.0, 0], scale = 0.04, rotation = [0, 0, 0] }: ModelTreeProps) {
   // Load the external tree model
   const fbx = useFBX('/models/tree.fbx')
+  const clonedFbx = useMemo(() => fbx.clone(), [fbx])
   const treeRef = useRef<THREE.Group>(null)
 
   // Use a clipping plane to simulate growth (bottom-up reveal)
@@ -19,8 +23,8 @@ export default function ModelTree({ growth }: ModelTreeProps) {
 
   // Apply clipping planes to the original materials of the FBX
   useEffect(() => {
-    if (fbx) {
-      fbx.traverse((child) => {
+    if (clonedFbx) {
+      clonedFbx.traverse((child) => {
         if ((child as THREE.Mesh).isMesh) {
           const mesh = child as THREE.Mesh
           if (mesh.material) {
@@ -38,7 +42,7 @@ export default function ModelTree({ growth }: ModelTreeProps) {
         }
       })
     }
-  }, [fbx, clippingPlane])
+  }, [clonedFbx, clippingPlane])
 
   useFrame(() => {
     // Reveal from bottom (-2.0) upwards
@@ -50,10 +54,10 @@ export default function ModelTree({ growth }: ModelTreeProps) {
   return (
     <primitive
       ref={treeRef}
-      object={fbx}
-      scale={0.04} // Adjusted scale for better visibility
-      position={[0, -2.0,]}
-      rotation={[0, 0, 0]}
+      object={clonedFbx}
+      scale={scale}
+      position={position}
+      rotation={rotation}
     />
   )
 }
