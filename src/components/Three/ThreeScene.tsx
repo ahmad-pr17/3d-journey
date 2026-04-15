@@ -93,14 +93,14 @@ function TreeGrowthWrapper({ story }: { story: any[] }) {
   return (
     <group position={[0, 0, 0]}>
       {/* Central main tree */}
-      <ModelTree growth={scroll.offset} position={[0, -2.0, 0]} scale={0.04} />
+      <ModelTree position={[0, -2.0, 0]} scale={0.4} />
       {/* Forest surrounding */}
-      <ModelTree growth={scroll.offset} position={[-4, -2.0, 2]} scale={0.035} rotation={[0, Math.PI / 4, 0]} />
-      <ModelTree growth={scroll.offset} position={[4, -2.0, -3]} scale={0.045} rotation={[0, -Math.PI / 6, 0]} />
-      <ModelTree growth={scroll.offset} position={[-3, -2.0, -6]} scale={0.03} rotation={[0, Math.PI / 3, 0]} />
-      <ModelTree growth={scroll.offset} position={[5, -2.0, 4]} scale={0.05} rotation={[0, Math.PI, 0]} />
-      <ModelTree growth={scroll.offset} position={[-6, -2.0, -1]} scale={0.038} rotation={[0, -Math.PI / 2, 0]} />
-      <ModelTree growth={scroll.offset} position={[2, -2.0, -8]} scale={0.042} rotation={[0, Math.PI / 8, 0]} />
+      <ModelTree position={[-4, -2.0, 2]} scale={0.35} rotation={[0, Math.PI / 4, 0]} />
+      <ModelTree position={[4, -2.0, -3]} scale={0.45} rotation={[0, -Math.PI / 6, 0]} />
+      <ModelTree position={[-3, -2.0, -6]} scale={0.3} rotation={[0, Math.PI / 3, 0]} />
+      <ModelTree position={[5, -2.0, 4]} scale={0.5} rotation={[0, Math.PI, 0]} />
+      <ModelTree position={[-6, -2.0, -1]} scale={0.38} rotation={[0, -Math.PI / 2, 0]} />
+      <ModelTree position={[2, -2.0, -8]} scale={0.42} rotation={[0, Math.PI / 8, 0]} />
 
       {story.map((item, index) => (
         <StoryCard
@@ -110,10 +110,9 @@ function TreeGrowthWrapper({ story }: { story: any[] }) {
           title={item.title}
           description={item.description}
           color={item.color}
-          growth={scroll.offset}
         />
       ))}
-      <Landscape growth={scroll.offset} />
+      <Landscape />
     </group>
   )
 }

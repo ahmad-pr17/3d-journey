@@ -14,7 +14,7 @@ interface StoryCardProps {
   growth: number
 }
 
-export default function StoryCard({ index, total, title, description, color, growth }: StoryCardProps) {
+export default function StoryCard({ index, total, title, description, color }: StoryCardProps) {
   const cardRef = useRef<THREE.Group>(null)
   const scroll = useScroll()
   const offset = (index + 1) * 3 // Vertical spacing along the tree
@@ -24,22 +24,25 @@ export default function StoryCard({ index, total, title, description, color, gro
     const threshold = (index + 1) / (total + 1)
     
     if (cardRef.current) {
+      // Use scroll.offset directly for reactivity
+      const currentGrowth = scroll.offset;
+
       // Visibility based on growth
-      cardRef.current.visible = growth > threshold
+      cardRef.current.visible = currentGrowth > threshold
       
       // Position tracking (attached to branches)
-      const targetY = offset * growth
+      const targetY = offset * currentGrowth
       cardRef.current.position.y = THREE.MathUtils.lerp(cardRef.current.position.y, targetY, 0.1)
       
       // Animate ONLY on scroll (tied to growth value)
-      const scrollRotation = growth * Math.PI * 6 // Rotates 3 full times total over the scroll timeline
+      const scrollRotation = currentGrowth * Math.PI * 6 // Rotates 3 full times total over the scroll timeline
       
       // Gentle leaf-like swaying that only happens when you scroll
       cardRef.current.rotation.z = Math.sin(scrollRotation + index) * 0.2
       cardRef.current.rotation.x = Math.cos(scrollRotation + index) * 0.15
       
-      const angle = (index / total) * Math.PI * 2 + growth * Math.PI * 2
-      const radius = 3 * (growth > threshold ? 1 : 0)
+      const angle = (index / total) * Math.PI * 2 + currentGrowth * Math.PI * 2
+      const radius = 3 * (currentGrowth > threshold ? 1 : 0)
       cardRef.current.position.x = Math.cos(angle) * radius
       cardRef.current.position.z = Math.sin(angle) * radius
       cardRef.current.lookAt(0, targetY, 0)

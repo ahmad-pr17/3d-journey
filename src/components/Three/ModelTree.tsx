@@ -6,13 +6,16 @@ import { useFBX } from '@react-three/drei'
 import * as THREE from 'three'
 
 interface ModelTreeProps {
-  growth: number
   position?: [number, number, number]
   scale?: number
   rotation?: [number, number, number]
 }
 
-export default function ModelTree({ growth, position = [0, -2.0, 0], scale = 0.04, rotation = [0, 0, 0] }: ModelTreeProps) {
+import { useScroll } from '@react-three/drei'
+
+// ...
+export default function ModelTree({ position = [0, -2.0, 0], scale = 0.4, rotation = [0, 0, 0] }: ModelTreeProps) {
+  const scroll = useScroll()
   // Load the external tree model
   const fbx = useFBX('/models/tree.fbx')
   const clonedFbx = useMemo(() => fbx.clone(), [fbx])
@@ -47,7 +50,8 @@ export default function ModelTree({ growth, position = [0, -2.0, 0], scale = 0.0
   useFrame(() => {
     // Reveal from bottom (-2.0) upwards
     const maxHeight = 40
-    const clipY = -2.0 + growth * (maxHeight + 2)
+    // Use scroll.offset dynamically
+    const clipY = -2.0 + scroll.offset * (maxHeight + 2)
     clippingPlane.constant = clipY
   })
 
