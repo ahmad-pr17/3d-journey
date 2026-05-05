@@ -6,8 +6,7 @@ import { Suspense, useRef } from 'react'
 import * as THREE from 'three'
 import ModelTree from './ModelTree'
 import Landscape from './Landscape'
-import StoryCard from './StoryCard'
-import Overlay from './Overlay'
+import FixedStoryCard from './FixedStoryCard'
 
 function LightingRig() {
   const scroll = useScroll()
@@ -54,65 +53,66 @@ function LightingRig() {
 
 function TreeGrowthWrapper({ story }: { story: any[] }) {
   const scroll = useScroll()
+  const cameraTarget = useRef(new THREE.Vector3(0, 2, 0))
 
   useFrame((state) => {
     const offset = scroll.offset // 0 to 1
 
-    // Drone Takeoff Journey Camera Logic
-    if (offset < 0.3) {
-      // Phase 1: Drift forward through the forest floor
-      // Map 0 -> 0.3 to 0 -> 1 normalized
-      const localOffset = offset / 0.3
-      const targetZ = THREE.MathUtils.lerp(15, 6, localOffset)
-      const targetY = THREE.MathUtils.lerp(1, 2, localOffset)
+    let targetPos = new THREE.Vector3()
+    let currentLookTarget = new THREE.Vector3()
 
-      state.camera.position.z = THREE.MathUtils.lerp(state.camera.position.z, targetZ, 0.1)
-      state.camera.position.y = THREE.MathUtils.lerp(state.camera.position.y, targetY, 0.1)
-      state.camera.lookAt(0, 2, 0)
-    } else if (offset < 0.7) {
-      // Phase 2: Climb the trees
-      const localOffset = (offset - 0.3) / 0.4
-      const targetY = THREE.MathUtils.lerp(2, 12, localOffset)
-      const targetLookY = THREE.MathUtils.lerp(2, 12, localOffset)
-
-      state.camera.position.z = THREE.MathUtils.lerp(state.camera.position.z, 6, 0.1)
-      state.camera.position.y = THREE.MathUtils.lerp(state.camera.position.y, targetY, 0.1)
-      state.camera.lookAt(0, targetLookY, 0)
+    if (offset < 0.25) {
+      const localOffset = offset / 0.25
+      targetPos.lerpVectors(new THREE.Vector3(0, 1, 15), new THREE.Vector3(-1, 2.5, 9), localOffset)
+      currentLookTarget.lerpVectors(new THREE.Vector3(0, 2, 0), new THREE.Vector3(-2, 2.5, 7), localOffset)
+    } else if (offset < 0.5) {
+      const localOffset = (offset - 0.25) / 0.25
+      targetPos.lerpVectors(new THREE.Vector3(-1, 2.5, 9), new THREE.Vector3(1.5, 4.5, 4), localOffset)
+      currentLookTarget.lerpVectors(new THREE.Vector3(-2, 2.5, 7), new THREE.Vector3(2.5, 4.5, 2), localOffset)
+    } else if (offset < 0.75) {
+      const localOffset = (offset - 0.5) / 0.25
+      targetPos.lerpVectors(new THREE.Vector3(1.5, 4.5, 4), new THREE.Vector3(0, 8.5, 2), localOffset)
+      currentLookTarget.lerpVectors(new THREE.Vector3(2.5, 4.5, 2), new THREE.Vector3(-1.5, 8.5, 0), localOffset)
     } else {
-      // Phase 3: Summit & look at sky
-      const localOffset = (offset - 0.7) / 0.3
-      const targetY = THREE.MathUtils.lerp(12, 18, localOffset)
-      const targetLookY = THREE.MathUtils.lerp(12, 28, localOffset) // look up!
-
-      state.camera.position.z = THREE.MathUtils.lerp(state.camera.position.z, 6, 0.1)
-      state.camera.position.y = THREE.MathUtils.lerp(state.camera.position.y, targetY, 0.1)
-      state.camera.lookAt(0, targetLookY, 0)
+      const localOffset = (offset - 0.75) / 0.25
+      targetPos.lerpVectors(new THREE.Vector3(0, 8.5, 2), new THREE.Vector3(0, 15.5, 7), localOffset)
+      currentLookTarget.lerpVectors(new THREE.Vector3(-1.5, 8.5, 0), new THREE.Vector3(0, 15.5, 4), localOffset)
     }
+
+    // Smoothly interpolate camera position
+    state.camera.position.lerp(targetPos, 0.05)
+    
+    // Smoothly interpolate LookAt target
+    cameraTarget.current.lerp(currentLookTarget, 0.05)
+    state.camera.lookAt(cameraTarget.current)
   })
 
   return (
     <group position={[0, 0, 0]}>
-      {/* Central main tree */}
-      <ModelTree position={[0, -2.0, 0]} scale={0.4} />
-      {/* Forest surrounding */}
-      <ModelTree position={[-4, -2.0, 2]} scale={0.35} rotation={[0, Math.PI / 4, 0]} />
-      <ModelTree position={[4, -2.0, -3]} scale={0.45} rotation={[0, -Math.PI / 6, 0]} />
-      <ModelTree position={[-3, -2.0, -6]} scale={0.3} rotation={[0, Math.PI / 3, 0]} />
-      <ModelTree position={[5, -2.0, 4]} scale={0.5} rotation={[0, Math.PI, 0]} />
-      <ModelTree position={[-6, -2.0, -1]} scale={0.38} rotation={[0, -Math.PI / 2, 0]} />
-      <ModelTree position={[2, -2.0, -8]} scale={0.42} rotation={[0, Math.PI / 8, 0]} />
+      {/* 1. Static Scenery (Drawn First) */}
+      <Landscape />
+      
+      {/* 2. Trees */}
+      <ModelTree position={[0, -2.0, 0]} scale={0.04} />
+      <ModelTree position={[-4, -2.0, 2]} scale={0.035} rotation={[0, Math.PI / 4, 0]} />
+      <ModelTree position={[4, -2.0, -3]} scale={0.045} rotation={[0, -Math.PI / 6, 0]} />
+      <ModelTree position={[-3, -2.0, -6]} scale={0.03} rotation={[0, Math.PI / 3, 0]} />
+      <ModelTree position={[5, -2.0, 4]} scale={0.05} rotation={[0, Math.PI, 0]} />
+      <ModelTree position={[-6, -2.0, -1]} scale={0.038} rotation={[0, -Math.PI / 2, 0]} />
+      <ModelTree position={[2, -2.0, -8]} scale={0.042} rotation={[0, Math.PI / 8, 0]} />
 
-      {story.map((item, index) => (
-        <StoryCard
+      {/* 3. Story Cards (Drawn LAST with high renderOrder and depthTest: false) */}
+      {story.map((item) => (
+        <FixedStoryCard
           key={item.id}
-          index={index}
-          total={story.length}
+          position={item.cardPos as [number, number, number]}
           title={item.title}
           description={item.description}
           color={item.color}
+          scrollOffset={scroll.offset}
+          range={item.range as [number, number]}
         />
       ))}
-      <Landscape />
     </group>
   )
 }
@@ -120,27 +120,35 @@ function TreeGrowthWrapper({ story }: { story: any[] }) {
 const story = [
   {
     id: 1,
-    title: "Origins",
-    description: "Our story begins in the vast blue expanse of the sky, where dreams take flight among the golden clouds.",
+    title: "Roots & Ambition",
+    description: "Like a tree seeking the sky, our journey begins in the quiet shadows. Every grand ascent starts with a single intent to grow.",
     color: "#FDD835",
+    cardPos: [-2, 2.5, 7], 
+    range: [0, 0.3] // Start at 0
   },
   {
     id: 2,
-    title: "The Climb",
-    description: "Scaling the heights of ambition, the pole represents our vertical journey towards a better future.",
+    title: "Chasing the Light",
+    description: "Obstacles are merely branches in the structural path of our ascent. We adapt, twisting gracefully around them.",
     color: "#03A9F4",
+    cardPos: [2.5, 4.5, 2],
+    range: [0.3, 0.55] // Touches precisely at 0.3
   },
   {
     id: 3,
-    title: "Peak Horizon",
-    description: "Reaching the summit, we see the landscape of our achievements glowing in the morning sun.",
+    title: "Weathering the Wind",
+    description: "The canopy sways but the foundation holds firm. Resilience is the invisible resin that keeps the bark intact.",
     color: "#FFEE58",
+    cardPos: [-1.5, 8.5, 0],
+    range: [0.55, 0.8] // Touches precisely at 0.55
   },
   {
     id: 4,
-    title: "Legacy",
-    description: "The story continues, leaving behind a trail of blue and gold for those who follow the path.",
+    title: "The Silent Summit",
+    description: "At the peak, the forest reveals its interconnected splendor. A breathtaking view earned by unwavering vertical patience.",
     color: "#29B6F6",
+    cardPos: [0, 15.5, 4],
+    range: [0.8, 1.0] // Touches precisely at 0.8
   },
 ]
 
@@ -165,16 +173,13 @@ export default function ThreeScene() {
           <ScrollControls pages={story.length + 2} damping={0.25} style={{ overflowX: 'hidden' }}>
             <LightingRig />
             <TreeGrowthWrapper story={story} />
-            <Scroll html>
-              <Overlay story={story} />
-            </Scroll>
           </ScrollControls>
 
           <EffectComposer>
             <DepthOfField
               focusDistance={0.01}
-              focalLength={0.02}
-              bokehScale={3}
+              focalLength={0.01} // More subtle blur
+              bokehScale={1.5}  // Reduced blur
               height={480}
             />
           </EffectComposer>

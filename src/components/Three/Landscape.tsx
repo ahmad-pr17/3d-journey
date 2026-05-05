@@ -1,65 +1,45 @@
-'use client'
-
-import { useRef } from 'react'
-import { Sparkles, Float, MeshWobbleMaterial, useScroll } from '@react-three/drei'
-import * as THREE from 'three'
-import { useFrame } from '@react-three/fiber'
+import { useMemo } from 'react'
+import { Sparkles, Instances, Instance } from '@react-three/drei'
 
 export default function Landscape() {
-  const scroll = useScroll()
-  const sparklesRef = useRef<any>(null)
-  const wobbleMaterials = useRef<any[]>([])
-
-  useFrame(() => {
-    const growth = scroll.offset
-    const fireflyOpacity = Math.max(0, 0.5 - growth)
-    const orbOpacity = Math.max(0.1, 1 - growth * 1.5)
-
-    if (sparklesRef.current) {
-      // Sparkles uses a ShaderMaterial where opacity can be updated
-      sparklesRef.current.material.opacity = fireflyOpacity
+  // Generate random positions for grass blades
+  const grassData = useMemo(() => {
+    const data = []
+    for (let i = 0; i < 3000; i++) {
+      data.push({
+        position: [
+          (Math.random() - 0.5) * 30, // X spread
+          -2.0,                       // Rooted at forest floor
+          (Math.random() - 0.5) * 30  // Z spread
+        ] as [number, number, number],
+        rotation: [0, Math.random() * Math.PI, 0] as [number, number, number],
+        scale: 0.5 + Math.random() * 1.0
+      })
     }
-    
-    wobbleMaterials.current.forEach(mat => {
-      if (mat) {
-        mat.opacity = orbOpacity
-      }
-    })
-  })
+    return data
+  }, [])
 
   return (
     <group>
-      {/* Magic Fireflies / Sparkles inside the forest */}
+      {/* Magic Fireflies / Sparkles inside the forest (Persistent) */}
       <Sparkles 
-        ref={sparklesRef}
         count={300} 
         scale={[40, 20, 40]} // Spread throughout the forest
         size={2} 
         speed={0.5} 
         color="#FDD835" 
-        transparent
+        opacity={0.8}
         position={[0, 5, 0]}
       />
       
-      {/* Floating Sky Blue Orbs - representing ascending dreams */}
-      {[...Array(10)].map((_, i) => (
-        <Float key={i} speed={2} rotationIntensity={1} floatIntensity={2}>
-          <mesh 
-            position={[
-              (Math.random() - 0.5) * 30,
-              5 + Math.random() * 20,
-              (Math.random() - 0.5) * 30
-            ]}
-          >
-            <sphereGeometry args={[0.1, 16, 16]} />
-            <MeshWobbleMaterial 
-              ref={(el) => { wobbleMaterials.current[i] = el }}
-              factor={0.6} speed={2} color="#81D4FA" 
-              transparent 
-            />
-          </mesh>
-        </Float>
-      ))}
+      {/* Grass Instances on the Forest Floor */}
+      <Instances range={3000}>
+        <coneGeometry args={[0.05, 0.4, 3]} />
+        <meshStandardMaterial color="#2b5329" roughness={0.8} />
+        {grassData.map((props, i) => (
+          <Instance key={i} {...props} />
+        ))}
+      </Instances>
     </group>
   )
 }

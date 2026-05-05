@@ -14,7 +14,7 @@ interface ModelTreeProps {
 import { useScroll } from '@react-three/drei'
 
 // ...
-export default function ModelTree({ position = [0, -2.0, 0], scale = 0.4, rotation = [0, 0, 0] }: ModelTreeProps) {
+export default function ModelTree({ position = [0, -2.0, 0], scale = 0.04, rotation = [0, 0, 0] }: ModelTreeProps) {
   const scroll = useScroll()
   // Load the external tree model
   const fbx = useFBX('/models/tree.fbx')
